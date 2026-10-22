@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf %}
+{% block title %}{{ 'Reschedule' if appt else 'Book appointment' }}{% endblock %}
+{% block content %}
+<h1>{{ 'Reschedule appointment' if appt else 'Book appointment' }}</h1>
+<p class="sub">{% if appt %}{{ appt.patient.name }} with {{ appt.doctor.name }}, currently {{ appt.start_at|dt }}.{% else %}Pick a patient, doctor and date, then choose a free slot.{% endif %}</p>
+<form method="get" class="card form">
+  {% if appt %}<input type="hidden" name="doctor_id" value="{{ doctor_id }}">{% endif %}
+  {% if not appt %}
+  <div><label>Patient *</label><select name="patient_id" required><option value="">Select…</option>{% for p in patients %}<option value="{{ p.id }}" {{ 'selected' if p.id == patient_id }}>{{ p.name }} ({{ p.patient_code }})</option>{% endfor %}</select></div>
+  <div><label>Doctor *</label><select name="doctor_id" required><option value="">Select…</option>{% for d in doctors %}{% if d.user.is_active %}<option value="{{ d.id }}" {{ 'selected' if d.id == doctor_id }}>{{ d.name }} — {{ d.specialization }}</option>{% endif %}{% endfor %}</select></div>
+  {% endif %}
+  <div><label>Date *</label><input type="date" name="date" value="{{ day }}" min="{{ today }}" required></div>
+  <div style="align-self:end"><button class="sec">Show available slots</button></div>
+</form>
+{% if doctor_id and day %}
+<form method="post" class="card">{{ csrf() }}
+  <input type="hidden" name="doctor_id" value="{{ doctor_id }}"><input type="hidden" name="patient_id" value="{{ patient_id or '' }}"><input type="hidden" name="date" value="{{ day }}">
+  <h2>Slots on {{ day }}</h2>
+  {% if slots %}<div class="slots">{% for s in slots %}<label class="{{ '' if s.available else 'taken' }}"><input type="radio" name="slot" value="{{ s.start.strftime('%H:%M') }}" {{ '' if s.available else 'disabled' }} required><span>{{ s.start|t }}</span></label>{% endfor %}</div>
+  {% if not appt %}<div style="margin-top:14px"><label>Reason for visit</label><input name="reason" maxlength="255"></div>{% endif %}
+  <p><button>{{ 'Confirm new time' if appt else 'Book appointment' }}</button></p>
+  {% else %}<p class="muted">The doctor does not work on this day.</p>{% endif %}
+</form>{% endif %}
+{% endblock %}

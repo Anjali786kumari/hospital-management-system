@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% from "_macros.html" import badge %}
+{% block title %}Doctors{% endblock %}
+{% block content %}
+<div class="head"><h1>Doctors</h1>{% if current_user.role_name == 'admin' %}<a class="btn" href="{{ url_for('admin.doctor_new') }}">+ Add doctor</a>{% endif %}</div>
+<div class="card" style="padding:0"><table><tr><th>Doctor</th><th>Department</th><th>Specialization</th><th class="n">Fee</th><th>Working hours</th><th>Status</th>{% if current_user.role_name == 'admin' %}<th></th>{% endif %}</tr>
+{% for d in doctors %}<tr><td>{{ d.name }}<br><small class="muted">{{ d.license_no }}</small></td><td>{{ d.department.name }}</td><td>{{ d.specialization }}</td><td class="n">{{ d.consultation_fee|money }}</td>
+<td><small>{% for w in d.schedules %}{{ weekdays[w.weekday][:3] }} {{ w.start_time.strftime('%H:%M') }}–{{ w.end_time.strftime('%H:%M') }}{{ ', ' if not loop.last }}{% else %}<span class="muted">Not set</span>{% endfor %}</small></td>
+<td>{{ badge('active' if d.user.is_active else 'inactive') }}</td>
+{% if current_user.role_name == 'admin' %}<td class="right" style="white-space:nowrap"><a class="btn sec sm" href="{{ url_for('admin.doctor_schedule', did=d.id) }}">Hours</a> <a class="btn sec sm" href="{{ url_for('admin.doctor_edit', did=d.id) }}">Edit</a></td>{% endif %}</tr>{% endfor %}</table></div>
+{% endblock %}

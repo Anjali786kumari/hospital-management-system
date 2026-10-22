@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% from "_macros.html" import badge, pager %}
+{% block title %}Patients{% endblock %}
+{% block content %}
+<div class="head"><div><h1>Patients</h1><p class="sub" style="margin:0">{{ pg.total }} record{{ 's' if pg.total != 1 }}</p></div>
+{% if current_user.role_name != 'doctor' %}<a class="btn" href="{{ url_for('patients.new') }}">+ Register patient</a>{% endif %}</div>
+<form class="filters" method="get"><div style="flex:1"><label>Search</label><input name="q" value="{{ q }}" placeholder="Name, patient ID or phone"></div><button>Search</button></form>
+<div class="card" style="padding:0"><table><tr><th>ID</th><th>Name</th><th>Age / Sex</th><th>Phone</th><th>Status</th></tr>
+{% for p in pg.items %}<tr><td>{{ p.patient_code }}</td><td><a href="{{ url_for('patients.detail', pid=p.id) }}">{{ p.name }}</a></td><td>{{ p.age }} / {{ p.gender }}</td><td>{{ p.phone }}</td><td>{{ badge('active' if p.is_active else 'inactive') }}</td></tr>
+{% else %}<tr><td colspan="5" class="muted">No patients found.</td></tr>{% endfor %}</table></div>
+{{ pager(pg) }}
+{% endblock %}

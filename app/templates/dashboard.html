@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% from "_macros.html" import badge, action %}
+{% block content %}
+<div class="head"><div><h1>Welcome, {{ current_user.full_name }}</h1><p class="sub" style="margin:0">{{ now.strftime('%A, %d %B %Y') }}</p></div>
+{% if role != 'doctor' %}<div><a class="btn" href="{{ url_for('patients.new') }}">+ Register patient</a> <a class="btn sec" href="{{ url_for('appointments.new') }}">+ Book appointment</a></div>{% endif %}</div>
+
+{% if role == 'doctor' %}
+<div class="grid g4" style="margin-bottom:18px">
+  <div class="stat"><small>Today's appointments</small><b>{{ today_appts|length }}</b></div>
+  <div class="stat"><small>Completed today</small><b>{{ done_today }}</b></div>
+  <div class="stat"><small>Upcoming</small><b>{{ upcoming|length }}{{ '+' if upcoming|length >= 8 }}</b></div>
+</div>
+{% else %}
+<div class="grid g4" style="margin-bottom:18px">{% for k, v in stats.items() %}<div class="stat"><small>{{ k }}</small><b>{{ v }}</b></div>{% endfor %}</div>
+{% endif %}
+
+<div class="card"><h2>Today's schedule</h2>
+{% if today_appts %}<table><tr><th>Time</th><th>Patient</th>{% if role != 'doctor' %}<th>Doctor</th>{% endif %}<th>Reason</th><th>Status</th><th></th></tr>
+{% for a in today_appts %}<tr><td>{{ a.start_at|t }}</td><td><a href="{{ url_for('patients.detail', pid=a.patient_id) }}">{{ a.patient.name }}</a></td>
+{% if role != 'doctor' %}<td>{{ a.doctor.name }}</td>{% endif %}<td>{{ a.reason or '—' }}</td><td>{{ badge(a.status) }}</td>
+<td class="right">{% if role in ('doctor','admin') and a.status == 'scheduled' and a.start_at <= now %}<a class="btn sm" href="{{ url_for('clinical.write_record', aid=a.id) }}">Start consultation</a>{% endif %}</td></tr>{% endfor %}</table>
+{% else %}<p class="muted">No appointments today.</p>{% endif %}</div>
+
+{% if role == 'doctor' %}
+<div class="card"><h2>Upcoming</h2>
+{% for a in upcoming %}<div style="padding:6px 0;border-bottom:1px solid var(--line)">{{ a.start_at|dt }} — {{ a.patient.name }} <span class="muted">({{ a.reason or 'no reason given' }})</span></div>
+{% else %}<p class="muted">Nothing scheduled.</p>{% endfor %}</div>
+{% else %}
+<div class="card"><h2>Recent invoices</h2>
+<table><tr><th>No.</th><th>Patient</th><th class="n">Total</th><th class="n">Balance</th><th>Status</th></tr>
+{% for i in recent_invoices %}<tr><td><a href="{{ url_for('billing.view', iid=i.id) }}">{{ i.invoice_no }}</a></td><td>{{ i.patient.name }}</td><td class="n">{{ i.total|money }}</td><td class="n">{{ i.balance|money }}</td><td>{{ badge(i.status) }}</td></tr>
+{% else %}<tr><td colspan="5" class="muted">No invoices yet.</td></tr>{% endfor %}</table></div>
+{% endif %}
+{% endblock %}

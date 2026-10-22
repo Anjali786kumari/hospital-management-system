@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf %}
+{% block title %}New invoice{% endblock %}
+{% block content %}
+<h1>New invoice</h1>
+{% if appt %}<p class="sub">For {{ appt.patient.name }}'s appointment on {{ appt.start_at|dt }} with {{ appt.doctor.name }}. The consultation fee ({{ appt.doctor.consultation_fee|money }}) is added automatically.</p>{% endif %}
+<form method="post" class="card form">{{ csrf() }}
+{% if appt %}<input type="hidden" name="appointment_id" value="{{ appt.id }}">{% else %}
+<div><label>Patient *</label><select name="patient_id" required><option value="">Select…</option>{% for p in patients %}<option value="{{ p.id }}" {{ 'selected' if p.id == patient_id }}>{{ p.name }} ({{ p.patient_code }})</option>{% endfor %}</select></div>{% endif %}
+<div><label>Notes</label><input name="notes" maxlength="255"></div>
+<div class="full"><button>Create invoice</button></div></form>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% from "_macros.html" import badge, action %}
+{% block title %}{{ p.name }}{% endblock %}
+{% block content %}
+{% set role = current_user.role_name %}
+<div class="head"><div><h1>{{ p.name }} {{ badge('active' if p.is_active else 'inactive') }}</h1><p class="sub" style="margin:0">{{ p.patient_code }}</p></div>
+<div class="noprint">
+{% if role != 'doctor' %}<a class="btn" href="{{ url_for('appointments.new', patient_id=p.id) }}">Book appointment</a> <a class="btn sec" href="{{ url_for('patients.edit', pid=p.id) }}">Edit</a>{% endif %}
+{% if role == 'admin' %}{{ action(url_for('patients.toggle', pid=p.id), 'Deactivate' if p.is_active else 'Activate', 'bad' if p.is_active else 'sec') }}{% endif %}</div></div>
+<div class="card"><dl>
+<dt>Age / Gender</dt><dd>{{ p.age }} yrs · {{ p.gender }} · DOB {{ p.dob|d }}</dd><dt>Phone</dt><dd>{{ p.phone }}</dd><dt>Email</dt><dd>{{ p.email or '—' }}</dd>
+<dt>Blood group</dt><dd>{{ p.blood_group or '—' }}</dd><dt>Allergies</dt><dd>{{ p.allergies or 'None recorded' }}</dd>
+<dt>Emergency contact</dt><dd>{{ p.emergency_contact or '—' }}</dd><dt>Address</dt><dd>{{ p.address or '—' }}</dd></dl></div>
+<div class="card"><h2>Appointments</h2><table><tr><th>When</th><th>Doctor</th><th>Reason</th><th>Status</th></tr>
+{% for a in appts %}<tr><td>{{ a.start_at|dt }}</td><td>{{ a.doctor.name }}</td><td>{{ a.reason or '—' }}</td><td>{{ badge(a.status) }}</td></tr>{% else %}<tr><td colspan="4" class="muted">None yet.</td></tr>{% endfor %}</table></div>
+{% if role != 'receptionist' %}<div class="card"><h2>Medical history</h2>
+{% for r in records %}<div style="padding:8px 0;border-bottom:1px solid var(--line)"><b>{{ r.created_at|d }}</b> · {{ r.doctor.name }} — {{ r.diagnosis[:120] }}
+{% if role == 'admin' or r.doctor_id == (current_user.doctor.id if current_user.doctor else 0) %} <a href="{{ url_for('clinical.view_record', rid=r.id) }}">view</a>{% endif %}</div>{% else %}<p class="muted">No consultations recorded.</p>{% endfor %}</div>{% endif %}
+{% if role != 'doctor' %}<div class="card"><h2>Invoices</h2><table><tr><th>No.</th><th>Date</th><th class="n">Total</th><th class="n">Balance</th><th>Status</th></tr>
+{% for i in invoices %}<tr><td><a href="{{ url_for('billing.view', iid=i.id) }}">{{ i.invoice_no }}</a></td><td>{{ i.created_at|d }}</td><td class="n">{{ i.total|money }}</td><td class="n">{{ i.balance|money }}</td><td>{{ badge(i.status) }}</td></tr>{% else %}<tr><td colspan="5" class="muted">None yet.</td></tr>{% endfor %}</table></div>{% endif %}
+{% endblock %}

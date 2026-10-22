@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Medical record{% endblock %}
+{% block content %}
+<div class="head"><div><h1>Medical record</h1><p class="sub" style="margin:0">{{ rec.created_at|dt }} · {{ rec.doctor.name }}</p></div><button class="sec noprint" onclick="window.print()">Print</button></div>
+<div class="card"><dl><dt>Patient</dt><dd><a href="{{ url_for('patients.detail', pid=rec.patient_id) }}">{{ rec.patient.name }}</a> ({{ rec.patient.patient_code }})</dd>
+<dt>Vitals</dt><dd>{{ rec.vitals or '—' }}</dd><dt>Diagnosis</dt><dd>{{ rec.diagnosis }}</dd><dt>Notes</dt><dd>{{ rec.notes or '—' }}</dd><dt>Follow-up</dt><dd>{{ rec.follow_up_date|d }}</dd></dl></div>
+<div class="card"><h2>Prescription</h2><table><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Duration</th></tr>
+{% for p in rec.prescriptions %}<tr><td>{{ p.medicine }}</td><td>{{ p.dosage }}</td><td>{{ p.frequency }}</td><td>{{ p.duration_days }} days</td></tr>{% else %}<tr><td colspan="4" class="muted">No medicines prescribed.</td></tr>{% endfor %}</table></div>
+{% endblock %}

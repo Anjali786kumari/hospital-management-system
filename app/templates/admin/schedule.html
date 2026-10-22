@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf, action %}
+{% block title %}Working hours{% endblock %}
+{% block content %}
+<h1>Working hours — {{ doc.name }}</h1><p class="sub">Appointments are offered in {{ config.SLOT_MINUTES }}-minute slots inside these windows.</p>
+<form method="post" class="card form">{{ csrf() }}
+<div class="full"><label>Days</label>{% for d in weekdays %}<label style="display:inline-block;font-weight:500;margin-right:14px"><input type="checkbox" name="weekday" value="{{ loop.index0 }}"> {{ d[:3] }}</label>{% endfor %}</div>
+<div><label>From</label><input type="time" name="start_time" required></div><div><label>To</label><input type="time" name="end_time" required></div>
+<div style="align-self:end"><button>Add window</button></div></form>
+<div class="card" style="padding:0"><table><tr><th>Day</th><th>Hours</th><th></th></tr>
+{% for w in doc.schedules %}<tr><td>{{ weekdays[w.weekday] }}</td><td>{{ w.start_time.strftime('%H:%M') }} – {{ w.end_time.strftime('%H:%M') }}</td><td class="right">{{ action(url_for('admin.schedule_delete', sid=w.id), 'Remove', 'bad sm', 'Remove this window?') }}</td></tr>{% else %}<tr><td colspan="3" class="muted">No working hours yet — patients cannot be booked.</td></tr>{% endfor %}</table></div>
+<a class="btn sec" href="{{ url_for('admin.doctors') }}">Back to doctors</a>{% endblock %}

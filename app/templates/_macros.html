@@ -1,0 +1,21 @@
+{% macro badge(status) %}<span class="badge b-{{ status }}">{{ status|replace('_',' ')|capitalize }}</span>{% endmacro %}
+
+{% macro csrf() %}<input type="hidden" name="_csrf" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro field(label, name, f, type='text', required=false, cls='', attrs='') %}
+<div class="{{ cls }}"><label for="{{ name }}">{{ label }}{% if required %} *{% endif %}</label>
+<input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ f.get(name, '') if f.get(name) is not none else '' }}" {% if required %}required{% endif %} {{ attrs|safe }}></div>
+{% endmacro %}
+
+{% macro action(url, label, cls='sec sm', confirm=None) %}
+<form method="post" action="{{ url }}" class="inline" {% if confirm %}onsubmit="return confirm('{{ confirm }}')"{% endif %}>
+<input type="hidden" name="_csrf" value="{{ csrf_token() }}"><button class="{{ cls }}">{{ label }}</button></form>
+{% endmacro %}
+
+{% macro pager(pg) %}
+{% if pg.pages > 1 %}<div class="pager">
+{% if pg.has_prev %}<a class="btn sec sm" href="{{ page_url(pg.prev_num) }}">‹ Prev</a>{% endif %}
+<span class="muted">Page {{ pg.page }} of {{ pg.pages }}</span>
+{% if pg.has_next %}<a class="btn sec sm" href="{{ page_url(pg.next_num) }}">Next ›</a>{% endif %}
+</div>{% endif %}
+{% endmacro %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% from "_macros.html" import field, csrf %}
+{% block title %}{{ 'Edit' if p else 'Register' }} patient{% endblock %}
+{% block content %}
+<h1>{{ 'Edit ' ~ p.name if p else 'Register patient' }}</h1><p class="sub">Fields marked * are required.</p>
+<form method="post" class="card form">{{ csrf() }}
+{{ field('First name','first_name',f,required=true) }}{{ field('Last name','last_name',f,required=true) }}
+{{ field('Date of birth','dob',f,'date',true,attrs='max="' ~ now.date().isoformat() ~ '"') }}
+<div><label>Gender *</label><select name="gender" required><option value="">Select…</option>{% for g in genders %}<option {{ 'selected' if f.get('gender') == g }}>{{ g }}</option>{% endfor %}</select></div>
+{{ field('Phone','phone',f,'tel',true) }}{{ field('Email','email',f,'email') }}
+<div><label>Blood group</label><select name="blood_group">{% for b in groups %}<option value="{{ b }}" {{ 'selected' if f.get('blood_group') == b }}>{{ b or '—' }}</option>{% endfor %}</select></div>
+{{ field('Emergency contact','emergency_contact',f) }}
+{{ field('Address','address',f,cls='full') }}{{ field('Known allergies','allergies',f,cls='full') }}
+<div class="full"><button>{{ 'Save changes' if p else 'Register patient' }}</button> <a class="btn sec" href="{{ url_for('patients.detail', pid=p.id) if p else url_for('patients.index') }}">Cancel</a></div>
+</form>{% endblock %}

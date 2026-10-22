@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% from "_macros.html" import badge, action, pager %}
+{% block title %}Appointments{% endblock %}
+{% block content %}
+{% set role = current_user.role_name %}
+<div class="head"><h1>Appointments</h1>{% if role != 'doctor' %}<a class="btn" href="{{ url_for('appointments.new') }}">+ Book appointment</a>{% endif %}</div>
+<form class="filters" method="get">
+<div><label>Date</label><input type="date" name="date" value="{{ day }}"></div>
+{% if role != 'doctor' %}<div><label>Doctor</label><select name="doctor_id"><option value="">All</option>{% for d in doctors %}<option value="{{ d.id }}" {{ 'selected' if d.id == doctor_id }}>{{ d.name }}</option>{% endfor %}</select></div>{% endif %}
+<div><label>Status</label><select name="status"><option value="">All</option>{% for s in ('scheduled','completed','cancelled','no_show') %}<option value="{{ s }}" {{ 'selected' if s == status }}>{{ s|replace('_',' ')|capitalize }}</option>{% endfor %}</select></div>
+<button>Filter</button> <a class="btn sec" href="{{ url_for('appointments.index') }}">Reset</a></form>
+<div class="card" style="padding:0"><table><tr><th>When</th><th>Patient</th><th>Doctor</th><th>Reason</th><th>Status</th><th></th></tr>
+{% for a in pg.items %}<tr><td>{{ a.start_at|dt }}</td><td><a href="{{ url_for('patients.detail', pid=a.patient_id) }}">{{ a.patient.name }}</a></td><td>{{ a.doctor.name }}</td><td>{{ a.reason or '—' }}</td><td>{{ badge(a.status) }}</td>
+<td class="right" style="white-space:nowrap">
+{% if a.status == 'scheduled' %}
+  {% if role in ('doctor','admin') and a.start_at <= now %}<a class="btn sm" href="{{ url_for('clinical.write_record', aid=a.id) }}">Consult</a>{% endif %}
+  {% if role != 'doctor' %}<a class="btn sec sm" href="{{ url_for('appointments.reschedule', aid=a.id) }}">Reschedule</a>{% endif %}
+  {% if a.start_at <= now %}{{ action(url_for('appointments.no_show', aid=a.id), 'No-show') }}{% endif %}
+  {{ action(url_for('appointments.cancel', aid=a.id), 'Cancel', 'bad sm', 'Cancel this appointment?') }}
+{% elif a.status == 'completed' %}
+  {% if a.record and role != 'receptionist' %}<a class="btn sec sm" href="{{ url_for('clinical.view_record', rid=a.record.id) }}">Record</a>{% endif %}
+  {% if role != 'doctor' and not a.invoices|rejectattr('status','equalto','void')|list %}<a class="btn sec sm" href="{{ url_for('billing.new', appointment_id=a.id) }}">Bill</a>{% endif %}
+{% endif %}</td></tr>
+{% else %}<tr><td colspan="6" class="muted">No appointments match.</td></tr>{% endfor %}</table></div>
+{{ pager(pg) }}
+{% endblock %}

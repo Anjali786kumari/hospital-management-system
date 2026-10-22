@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% from "_macros.html" import field, csrf %}
+{% block title %}Doctor{% endblock %}
+{% block content %}
+<h1>{{ 'Edit ' ~ doc.name if doc else 'Add doctor' }}</h1><p class="sub">{{ 'Leave password blank to keep it.' if doc else 'Creates a login (role: doctor) and the clinical profile.' }}</p>
+<form method="post" class="card form">{{ csrf() }}
+{% if not doc %}{{ field('Username','username',f,required=true,attrs='pattern="[a-z0-9_.]{3,30}"') }}{% endif %}
+{{ field('Full name','full_name',f,required=true) }}{{ field('Email','email',f,'email',true) }}
+{{ field('Password' ~ (' (new)' if doc else ''),'password',{},'password',not doc,attrs='autocomplete="new-password"') }}
+<div><label>Department *</label><select name="department_id" required><option value="">Select…</option>{% for d in depts %}<option value="{{ d.id }}" {{ 'selected' if f.get('department_id')|string == d.id|string }}>{{ d.name }}</option>{% endfor %}</select></div>
+{{ field('Specialization','specialization',f,required=true) }}{{ field('Licence no.','license_no',f,required=true) }}{{ field('Phone','phone',f,'tel') }}
+{{ field('Consultation fee','consultation_fee',f,'number',true,attrs='step="0.01" min="0"') }}
+<div class="full"><button>Save</button> <a class="btn sec" href="{{ url_for('admin.doctors') }}">Cancel</a></div></form>{% endblock %}

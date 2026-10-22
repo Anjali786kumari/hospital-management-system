@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+<div class="login">
+  <h1 style="text-align:center">MediCare HMS</h1>
+  <p class="sub" style="text-align:center">Sign in to continue</p>
+  <form method="post" class="card" style="display:grid;gap:14px">
+    {{ csrf() }}
+    <div><label for="username">Username</label><input id="username" name="username" required autofocus autocomplete="username"></div>
+    <div><label for="password">Password</label><input id="password" name="password" type="password" required autocomplete="current-password"></div>
+    <button>Sign in</button>
+  </form>
+  <div class="card" style="display:grid;gap:10px;margin-top:16px;text-align:center">
+    <h2 style="margin:0">Try the portfolio demo</h2>
+    <p class="sub" style="margin:0">Explore the app using a sample receptionist account.</p>
+    <form method="post" action="{{ url_for('auth.demo_reception') }}">
+      {{ csrf() }}
+      <button type="submit">Continue as Receptionist Demo</button>
+    </form>
+    <small>Use fictional demo data only. Shared demo changes may be visible to other visitors.</small>
+  </div>
+</div>
+{% endblock %}

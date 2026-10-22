@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% from "_macros.html" import badge, csrf, action %}
+{% block title %}{{ inv.invoice_no }}{% endblock %}
+{% block content %}
+{% set open = inv.status != 'void' %}
+<div class="head"><div><h1>{{ inv.invoice_no }} {{ badge(inv.status) }}</h1><p class="sub" style="margin:0">{{ inv.created_at|dt }} · <a href="{{ url_for('patients.detail', pid=inv.patient_id) }}">{{ inv.patient.name }}</a> ({{ inv.patient.patient_code }})</p></div>
+<div class="noprint"><button class="sec" onclick="window.print()">Print</button>
+{% if current_user.role_name == 'admin' and open and inv.paid == 0 %}{{ action(url_for('billing.void', iid=inv.id), 'Void invoice', 'bad', 'Void this invoice? This cannot be undone.') }}{% endif %}</div></div>
+<div class="card"><table><tr><th>Description</th><th class="n">Qty</th><th class="n">Unit price</th><th class="n">Amount</th><th class="noprint"></th></tr>
+{% for it in inv.items %}<tr><td>{{ it.description }}</td><td class="n">{{ it.quantity }}</td><td class="n">{{ it.unit_price|money }}</td><td class="n">{{ it.line_total|money }}</td>
+<td class="right noprint">{% if open %}{{ action(url_for('billing.delete_item', iid=inv.id, item_id=it.id), 'Remove', 'bad sm') }}{% endif %}</td></tr>{% else %}<tr><td colspan="5" class="muted">No items yet.</td></tr>{% endfor %}
+<tr><td colspan="3" class="n">Subtotal</td><td class="n">{{ inv.subtotal|money }}</td><td class="noprint"></td></tr>
+<tr><td colspan="3" class="n">Discount</td><td class="n">− {{ inv.discount|money }}</td><td class="noprint"></td></tr>
+<tr><td colspan="3" class="n"><b>Total</b></td><td class="n"><b>{{ inv.total|money }}</b></td><td class="noprint"></td></tr>
+<tr><td colspan="3" class="n">Paid</td><td class="n">{{ inv.paid|money }}</td><td class="noprint"></td></tr>
+<tr><td colspan="3" class="n"><b>Balance due</b></td><td class="n"><b>{{ inv.balance|money }}</b></td><td class="noprint"></td></tr></table></div>
+{% if open %}<div class="grid g2 noprint">
+<div class="card"><h2>Add item</h2><form method="post" action="{{ url_for('billing.add_item', iid=inv.id) }}" class="form">{{ csrf() }}
+<div class="full"><label>Description</label><input name="description" required maxlength="200" placeholder="e.g. Blood test (CBC)"></div>
+<div><label>Qty</label><input name="quantity" type="number" min="1" value="1" required></div><div><label>Unit price</label><input name="unit_price" type="number" step="0.01" min="0" required></div>
+<div class="full"><button>Add</button></div></form>
+<hr style="border:0;border-top:1px solid var(--line);margin:16px 0"><form method="post" action="{{ url_for('billing.discount', iid=inv.id) }}" class="form">{{ csrf() }}
+<div><label>Discount ({{ currency }})</label><input name="discount" type="number" step="0.01" min="0" value="{{ inv.discount }}"></div><div style="align-self:end"><button class="sec">Apply</button></div></form></div>
+<div class="card"><h2>Record payment</h2>{% if inv.balance > 0 %}<form method="post" action="{{ url_for('billing.pay', iid=inv.id) }}" class="form">{{ csrf() }}
+<div><label>Amount</label><input name="amount" type="number" step="0.01" min="0.01" max="{{ inv.balance }}" value="{{ inv.balance }}" required></div>
+<div><label>Method</label><select name="method">{% for m in methods %}<option value="{{ m }}">{{ m|capitalize }}</option>{% endfor %}</select></div>
+<div class="full"><label>Reference</label><input name="reference" maxlength="60" placeholder="Txn / receipt no. (optional)"></div><div class="full"><button>Record payment</button></div></form>
+{% else %}<p class="muted">Nothing outstanding.</p>{% endif %}
+<h2 style="margin-top:18px">Payments</h2>{% for p in inv.payments %}<div style="padding:5px 0;border-bottom:1px solid var(--line)">{{ p.paid_at|dt }} — <b>{{ p.amount|money }}</b> ({{ p.method }}){{ ' · ' ~ p.reference if p.reference }}</div>{% else %}<p class="muted">None yet.</p>{% endfor %}</div></div>{% endif %}
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<h1>Reports</h1><p class="sub">Last {{ days }} days</p>
+<div class="grid g4" style="margin-bottom:18px"><div class="stat"><small>Collected ({{ days }}d)</small><b>{{ total|money }}</b></div><div class="stat"><small>Outstanding balance</small><b>{{ outstanding|money }}</b></div></div>
+<div class="card"><h2>Daily collections</h2>
+<div style="display:flex;align-items:flex-end;gap:3px;height:140px">{% for d, v in series %}<div title="{{ d }}: {{ v|money }}" style="flex:1;background:var(--brand);border-radius:3px 3px 0 0;height:{{ (v / top * 100)|round(1) }}%;min-height:2px;opacity:{{ 1 if v else 0.25 }}"></div>{% endfor %}</div>
+<div class="muted" style="display:flex;justify-content:space-between;font-size:12px"><span>{{ series[0][0] }}</span><span>{{ series[-1][0] }}</span></div></div>
+<div class="grid g2">
+<div class="card"><h2>Revenue by doctor</h2><table>{% for n, v in by_doctor %}<tr><td>{{ n }}</td><td class="n">{{ v|money }}</td></tr>{% else %}<tr><td class="muted">No data.</td></tr>{% endfor %}</table></div>
+<div class="card"><h2>Appointments by status</h2><table>{% for s, c in by_status %}<tr><td>{{ s|replace('_',' ')|capitalize }}</td><td class="n">{{ c }}</td></tr>{% else %}<tr><td class="muted">No data.</td></tr>{% endfor %}</table></div>
+<div class="card"><h2>Appointments by department</h2><table>{% for n, c in by_dept %}<tr><td>{{ n }}</td><td class="n">{{ c }}</td></tr>{% else %}<tr><td class="muted">No data.</td></tr>{% endfor %}</table></div></div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf %}
+{% block title %}Consultation{% endblock %}
+{% block content %}
+<h1>Consultation</h1><p class="sub">{{ appt.patient.name }} ({{ appt.patient.patient_code }}) · {{ appt.patient.age }} yrs · {{ appt.start_at|dt }} · Allergies: <b>{{ appt.patient.allergies or 'none recorded' }}</b></p>
+<form method="post" class="card form">{{ csrf() }}
+<div class="full"><label>Vitals</label><input name="vitals" value="{{ f.get('vitals','') }}" placeholder="BP 120/80, Pulse 72, Temp 98.6°F, Weight 70kg"></div>
+<div class="full"><label>Diagnosis *</label><textarea name="diagnosis" rows="3" required>{{ f.get('diagnosis','') }}</textarea></div>
+<div class="full"><label>Notes</label><textarea name="notes" rows="3">{{ f.get('notes','') }}</textarea></div>
+<div class="full"><h2>Prescription</h2>
+<table id="rx"><tr><th>Medicine</th><th>Dosage</th><th>Frequency</th><th>Days</th></tr>
+{% for i in range(5) %}<tr><td><input name="medicine"></td><td><input name="dosage" placeholder="1 tablet"></td><td><input name="frequency" placeholder="Twice daily"></td><td><input name="duration_days" type="number" min="1" max="365"></td></tr>{% endfor %}</table></div>
+<div><label>Follow-up date</label><input type="date" name="follow_up_date" min="{{ (now.date()).isoformat() }}" value="{{ f.get('follow_up_date','') }}"></div>
+<div class="full"><button>Save &amp; complete appointment</button> <a class="btn sec" href="{{ url_for('appointments.index') }}">Cancel</a></div>
+</form>{% endblock %}
